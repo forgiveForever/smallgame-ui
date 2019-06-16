@@ -1,0 +1,64 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>展示画图</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript" src="./testWebsocket.js"></script>
+ <style>
+ 
+ body{
+     margin: 0;
+     padding: 0;
+ }
+ </style>
+</head>
+<body>
+   
+    <div style="width: 600px;display:flex;margin:30px auto;background: #f8f5fb; ">
+    <canvas width="600" height="600" id="canvas">
+    </canvas>
+    </div>
+   <script>
+  
+   var canvas = document.getElementById('canvas');
+   var cvs = canvas.getContext('2d');  
+   if(window.WebSocket){  ws = getWebsocket()}
+   ws.onmessage = function(e){
+          var msg =JSON.parse(e.data);
+          var drawobj = msg
+          cvs.lineCap = 'round';
+          cvs.lineJoin="round";
+          cvs.strokeStyle = drawobj.penColor;		//加载全局数据（画笔颜色）
+          cvs.lineWidth = drawobj.penWeight;//加载全局数据（画笔粗细）
+           
+          if(drawobj.draw_status == 1&& drawobj.isEraser == false){
+              let start_x = drawobj.start_x;
+              let start_y = drawobj.start_y;
+                cvs.beginPath();				//开始本次绘画
+                cvs.moveTo(start_x, start_y);	//画笔起始点
+                
+                // cvs.strokeStyle = drawobj.penColor;		//加载全局数据（画笔颜色）
+                // cvs.lineWidth = drawobj.penWeight;		//加载全局数据（画笔粗细）
+                cvs.lineTo(start_x, start_y);
+                cvs.stroke();	//画一个点
+          }
+         else if (drawobj.draw_status == 2 &&  drawobj.isEraser == false){
+            let move_x = drawobj.end_x;
+            let move_y = drawobj.end_y;
+           
+            cvs.lineTo(move_x, move_y);
+			cvs.stroke();	//渲染
+         }
+         else{
+            let start_x = drawobj.end_x;
+            let start_y = drawobj.end_y;
+            cvs.clearRect(start_x - drawobj.penWeight/2, start_y - drawobj.penWeight/2, drawobj.penWeight, drawobj.penWeight);
+         }
+
+            }
+  
+   </script>
+</body>
+</html>

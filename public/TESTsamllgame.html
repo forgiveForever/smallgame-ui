@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>小游戏</title>
+        <script type="text/javascript" src="./colorpicker.js"></script>
+        <script type="text/javascript" src="./testWebsocket.js"></script>
+        <link rel="stylesheet" type="text/css" href="./themes.css" />
+   
+        <style>
+            body{
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+        .container{
+            display: -webkit-flex;
+            display: flex;
+            margin: 60px auto;
+            width:1100px ;
+            /* background: beige; */
+        }
+        .canvas{
+          
+           background: white;
+           margin: 5px;
+          
+        }
+        .dis{
+            width: 200px;
+            height: 600px;
+            background: #efe6ce;
+            margin: 5px;
+          
+        }
+        .tool{
+            width: 300px;
+            height: 600px;
+            /* background: #efe6ce; */
+            margin: 5px;
+          
+        }
+
+        .line-tool{
+        position: relative;
+        height: 5px;
+        background: #776d6d;
+        width: 240px;
+        margin: 50px 0;
+        position: relative;
+        }
+
+        .line-tool .line-sel {
+         position: absolute;
+         top: -5px;
+         left: 0;
+         width: 15px;
+         height: 15px;
+         background: #fff59a;
+         cursor: pointer
+        }
+
+       .line-tool .line-sel .vals {
+        position: absolute;
+        font-size: 16px;
+        top: -35px;
+        left: -8px;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background: #b38474;
+      }
+ 
+      .line-tool .line-sel .vals:after {
+        content: "";
+        width: 0px;
+        height: 0px;
+        border-top: 6px solid blue;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 6px solid transparent;
+        display: block;
+        margin-left: 9px;
+      }
+
+      .button-css{
+        width: 240px;
+        height: 30px;
+        font-size: 12px;
+        margin: 20px 0;
+        border-radius: 8px;
+        font-family: "微软雅黑";
+        font-weight: bold;
+      }
+        
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+                <div class='dis'>
+                 
+                    </div>
+
+                <canvas class='canvas' id="canvas" width="600" height="600">
+                        对不起，您的浏览器不支持！
+                </canvas>
+                <div class='tool'>
+                        <!-- 调色器 -->
+                        <div id="color" style=" display: flex;">
+                                <!-- FlexiColorPicker插件 https://github.com/DavidDurman/FlexiColorPicker -->
+                                <div id="color-picker" class="cp-default" ></div>
+                            </div>
+
+                        <!-- 线条大小 -->
+                        <div class="line-tool" id="line-tool" >
+                            <div class='line-sel' id="line-sel">
+                               <div class="vals" id="vals">0</div>
+                            </div>
+                        </div>
+                        <!-- 橡皮擦 -->
+                        <button class="button-css" id="eraser">使用橡皮擦 </button>
+                        <button class="button-css" id="clear_canvas">清空画布 </button>
+                        <button class="button-css">保存图片 </button>
+
+
+                </div>
+        </div>
+        
+
+        <script>
+ 
+        if(window.WebSocket){  ws = getWebsocket()}
+        var penWeight = 1;
+		var penColor = '#f00';
+        var isEraser = false;	//是否正在使用橡皮擦 
+        var canvas = document.getElementById('canvas');
+        var cvs = canvas.getContext('2d');
+        var drawobj = {
+            start_x:null,
+            start_y:null,
+            end_x:null,
+            end_y:null,
+            penWeight:1,
+            penColor:'#f00',
+            isEraser:false,
+            draw_status:1
+
+        }
+
+        //画画
+        canvas.onmouseenter = function(){
+			canvas.onmousedown = function(e){
+				var start_x = e.clientX - canvas.offsetLeft + document.body.scrollLeft;
+                var start_y = e.clientY - canvas.offsetTop + document.body.scrollTop;
+                //传送起点
+                drawobj.start_x = start_x;
+                drawobj.start_y = start_y;
+               
+				if(isEraser === false){
+					
+					cvs.beginPath();				//开始本次绘画
+					cvs.moveTo(start_x, start_y);	//画笔起始点
+					cvs.lineCap = 'round';
+					cvs.lineJoin="round";
+					cvs.strokeStyle = penColor;		//加载全局数据（画笔颜色）
+					cvs.lineWidth = penWeight;		//加载全局数据（画笔粗细）
+					cvs.lineTo(start_x, start_y);
+					cvs.stroke();	//画一个点
+				}
+				else{
+					cvs.clearRect(start_x - penWeight/2, start_y - penWeight/2, penWeight, penWeight);
+				}
+				canvas.onmousemove = function(e){
+					var move_x = e.clientX - canvas.offsetLeft + document.body.scrollLeft;
+                    var move_y = e.clientY - canvas.offsetTop + document.body.scrollTop;
+                    
+                    drawobj.end_x = move_x;
+                    drawobj.end_y = move_y;
+                    drawobj.draw_status = 2;
+					if(isEraser === false){
+						cvs.lineTo(move_x, move_y);
+						cvs.stroke();	//渲染
+					}
+					else{
+						cvs.clearRect(move_x - penWeight/2, move_y - penWeight/2, penWeight, penWeight);
+                    }
+                    var msg = {
+                        type:1,
+                        drawobj:drawobj
+                    }
+                    console.log(drawobj)
+                   
+                    ws.send(JSON.stringify(msg))
+				}
+				canvas.onmouseup = function(e){
+					cvs.closePath();	//结束本次绘画
+					canvas.onmousemove = null;
+                    canvas.onmouseup = null;
+
+                    drawobj.draw_status = 1;
+                    var msg = {
+                        type:1,
+                        drawobj:drawobj
+                    }
+                    console.log(drawobj)
+                   
+                    ws.send(JSON.stringify(msg))
+                }
+                drawobj.draw_status = 1;
+                    var msg = {
+                        type:1,
+                        drawobj:drawobj
+                    }
+                    console.log(drawobj)
+                   
+                    ws.send(JSON.stringify(msg))
+			}
+			canvas.onmouseleave = function(){
+				canvas.onmousemove = null;
+				canvas.onmouseup = null;
+				canvas.onmousedown = null;
+			}
+		}
+
+
+
+        //橡皮擦
+		var btn_eraser = document.getElementById('eraser');
+		btn_eraser.onclick = function(){
+            isEraser = !isEraser;
+            drawobj.isEraser = isEraser
+			if(isEraser === false){
+				btn_eraser.style.backgroundColor = "rgb(221, 221, 221)";
+				btn_eraser.textContent = "使用橡皮擦";
+                btn_eraser.style.color = "black";
+				btn_eraser.style.fontWeight = "bold";
+			}
+			else{
+				btn_eraser.style.backgroundColor = "#333333";
+				btn_eraser.textContent = "正在使用橡皮擦"
+				btn_eraser.style.color = "red";
+				btn_eraser.style.fontWeight = "bold";
+			}
+		}
+
+//清空画布事件
+var btn_clear = document.getElementById('clear_canvas');
+		btn_clear.onclick = function(){
+			var tempWidth = canvas.width;
+			canvas.width = canvas.height;
+			canvas.width = tempWidth;
+		}
+
+        var lineDiv = document.getElementById('line-tool'); //长线条
+        var minDiv = document.getElementById('line-sel'); //小方块
+        //var msg = document.getElementsByClassName("msg");
+        var vals = document.getElementById("vals");
+        var ifBool = false; //判断鼠标是否按下
+        var start = function(e) {
+          //e.stopPropagation();
+          ifBool = true;
+          //console.log("鼠标按下")
+        }
+
+        
+        var move = function(e) {
+         // console.log("鼠标拖动")
+          if(ifBool) {
+            if(!e.touches) {  //兼容移动端
+              var x = e.clientX;
+            } else {   //兼容PC端
+              var x = e.touches[0].pageX;
+            }
+            //var x = e.touches[0].pageX || e.clientX; //鼠标横坐标var x
+            var lineDiv_left = getPosition(lineDiv).left; //长线条的横坐标
+            var minDiv_left = x - lineDiv_left; //小方块相对于父元素（长线条）的left值 
+            if(minDiv_left >= lineDiv.offsetWidth - 15) {
+              minDiv_left = lineDiv.offsetWidth - 15;
+            }
+            if(minDiv_left < 0) {
+              minDiv_left = 0;
+            }
+            //设置拖动后小方块的left值
+            minDiv.style.left = minDiv_left + "px";
+           // msg.innerText = parseInt((minDiv_left / (lineDiv.offsetWidth - 15)) * 100);
+            vals.innerText = parseInt((minDiv_left / (lineDiv.offsetWidth - 15)) * 100);
+            penWeight = parseInt((minDiv_left / (lineDiv.offsetWidth - 15)) * 100);
+            drawobj.penWeight = penWeight;
+		
+          }
+        }
+        var end = function(e) {
+            //console.log("鼠标弹起")
+            ifBool = false;
+          }
+          //鼠标按下方块
+        minDiv.addEventListener("touchstart", start);
+        minDiv.addEventListener("mousedown", start);
+        //拖动
+        window.addEventListener("touchmove", move);
+        window.addEventListener("mousemove", move);
+        //鼠标松开
+        window.addEventListener("touchend", end);
+        window.addEventListener("mouseup", end);
+        //获取元素的绝对位置
+        function getPosition(node) {
+          var left = node.offsetLeft; //获取元素相对于其父元素的left值var left
+          var top = node.offsetTop;
+          current = node.offsetParent; // 取得元素的offsetParent
+          　 // 一直循环直到根元素
+          　　
+          while(current != null) {　　
+            left += current.offsetLeft;　　
+            top += current.offsetTop;　　
+            current = current.offsetParent;　　
+          }
+          return {
+            "left": left,
+            "top": top
+          };
+        }
+
+
+            /* 调色板插件 https://github.com/DavidDurman/FlexiColorPicker */
+		var cp = ColorPicker(
+			document.getElementById('color-picker'),
+			function(hex, hsv, rgb) {
+				console.log(hex);	//十六进制颜色值
+				console.log(rgb);
+				
+                penColor = document.body.style.backgroundColor = hex;        //设置画笔色
+                drawobj.penColor =penColor;
+        	}
+		);
+		//初始化画板选取的颜色
+		cp.setHex("#00ff68");
+        </script>
+    </body>
+</html>
