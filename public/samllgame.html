@@ -6,6 +6,7 @@
         <script type="text/javascript" src="./colorpicker.js"></script>
         <script type="text/javascript" src="./websocketTool.js"></script>
         <script type="text/javascript" src="./drawChartTool.js"></script>
+        <script type="text/javascript" src="./tool.js"></script>
         <link rel="stylesheet" type="text/css" href="./themes.css" />
    
         <style>
@@ -133,6 +134,7 @@
         if(!userInfo){
             location.href = './index.html'
         }
+        //loadJs("./websocketTool.js");
         var msg = -1;
         var isshowchart = false;
         if(window.WebSocket){  ws = getWebsocket()}

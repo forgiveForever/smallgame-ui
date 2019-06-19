@@ -3,11 +3,13 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Page Title</title>
+    <link rel="stylesheet" type="text/css" href="./static/font/iconfont.css" />
+    <title>你画我猜</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
    
 </head>
  <style>
+button :focus{outline:0;} 
  body{
     width: 100%;
     height: 100%;
@@ -19,10 +21,11 @@
     background-color: #0085ff;
     background-image:url(./背景图片.png);
     overflow: hidden;
+   
  }
  .container{
     color: #000;
-    width: 400px;
+    width: 520px;
     height: 400px;
     margin: 60px auto;
     background-color: white;
@@ -30,19 +33,112 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%,-50%);
+    border-radius: 30px;
+   
  }
- 
+ .edit_img{
+    position: relative;
+    left: 50%;
+    top: 50%;
+    transform: translate(100%,10%);
+    width:30px;
+    height: 30px;
+    background-color: #0085ff;
+    border-radius: 50%
+ }
+ .edit_img:hover{
+    background-color:  #9963a7;
+ }
+ .edit_container{
+    width: 100%;
+    height: 100%;
+    background: #0c0c0c;
+    opacity: 0.6;
+    display: none;
+
+ }
+ .edit_div{
+     width: 600px;
+     height: 420px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+   background:white;
+   border-radius: 30px;
+   display: none;
+ }
+
+ .edit_bg{
+   width: 560px;
+   height: 320px;
+   margin: 40px auto 0 auto;
+   background: #9fbdc9;
+ }
+ .edit_creat_img{
+     max-width: 100px;
+     max-height: 100px;
+     margin: 3px;
+     border:3px solid white;
+     /* border-radius: 50% */
+ }
+
+ .edit_creat_img:hover{
+    border:3px solid rgb(142,213,248) !important;
+ }
+
  </style>
 <body>
     <div class="container">
-     用户名：<input type="text" id="username"/> <br/>
-     房间号：<input type="text" id="roomid"/><br/>
-     <button id="btn_create_room">创建房间</button> <button id="btn_enter_room">加入房间</button>
+        <div class="head_img">
+           
+            <div style="display: flex;margin-top: 20px">
+                    <div class="edit_img"  >
+                            <img src="./img/笔.png" style="margin: 4px;max-width: 22px;" onclick="editHeadImg()"/>
+                    </div>
+                    <img src="./img/2.png" style="margin: auto" id="head_img"/>
+            </div>
+        </div>
+        <div class="info" style="text-align: center;margin-top: 40px" >
+                <div style="margin: 10px 0 " >
+                        <i class="iconfont icon-renxiang " style="color:#0085ff;font-size: 20px "> </i>
+                        <span style="font-size:16px"> 用户名：</span>
+                       <input type="text" id="username" style="height: 30px;"/>
+                </div>
+                <div  style="margin: 10px 0 ">
+                        <i  class="iconfont icon-wodefangjian" style="color:#0085ff;font-size: 20px "></i>
+                        <span style="font-size:16px">房间号：</span>
+                        <input type="text" id="roomid" style="height: 30px;"/>
+                </div>
+        </div>
+        
+        <div  style="margin: 40px 0;text-align: center">
+                <button id="btn_create_room" style="height: 30px;width: 100px;">创建房间</button>
+                <button id="btn_enter_room" style="height: 30px;width: 100px;">加入房间</button>
+        </div>
+    </div>
 
+    <!-- 背景虚化 -->
+    <div class="edit_container" id="choose_img_bg">
+    </div>
+
+    <!-- 设置头像 -->
+    <div class="edit_div" id="choose_img_div">
+        <div>
+                <i class="iconfont icon-cha" style="float: right;color: tomato" onclick="closeChooseImg()" ></i>
+        </div>
+       
+        <div class="edit_bg"  id="imgListContainer">
+        </div>>
+        <div style="text-align: center;">
+        <button style="width: 100px;height: 30px;border-radius: 30px;outline: none;" onclick="choose()">choose</button>
+       </div>
     </div>
 
     <script>
-       var session = window.sessionStorage;
+
+      var user_img ="./img/2.png"
+      var session = window.sessionStorage;
       var  btn_create_room = document.getElementById("btn_create_room");
       btn_create_room.onclick = function(){
           var username_el = document.getElementById("username");
@@ -94,6 +190,69 @@
             }
          
       };
+
+      function createImgList(){
+          var imgcontainer = document.getElementById("imgListContainer");
+          for(let n=1;n<10;n++){
+              let img = document.createElement("img")
+              img.src ="./img/"+n+".png"
+              img.className = "edit_creat_img";
+              img.id = n+""
+              img.onclick = function(){
+                
+                let imgcontainer = document.getElementById("imgListContainer");
+                let num = imgcontainer.childElementCount
+                for(let m=0;m<num;m++){
+                    let tem_img =imgcontainer.children[m];
+                    //console.log(imgcontainer.children[m])
+                   // imgcontainer.children[m].addClass("hover")
+                   tem_img.style.border ="3px solid white";
+                   let className = tem_img.className;
+                   className = className.replace(" active_img","");
+                   console.log(className)
+                   tem_img.className = className;
+                }
+                let tem_img = document.getElementById(n+"")
+                tem_img.style.border = "3px solid #0085ff";
+                tem_img.className +=" active_img"
+              }
+              imgcontainer.appendChild(img);
+          }
+          
+      }
+     
+      function choose(){
+          let img = document.getElementsByClassName("active_img");
+          let src =  img[0].attributes[0].nodeValue;
+          let tem_img = document.getElementById("head_img");
+          tem_img.src = src;
+          closeChooseImg();
+      }
+    function closeChooseImg(){
+        document.getElementById("choose_img_bg").style.display = "none";
+        document.getElementById("choose_img_div").style.display ="none";
+    }
+
+    function openChooseImg(){
+        
+        document.getElementById("choose_img_bg").style.display = "block";
+        document.getElementById("choose_img_div").style.display ="block";
+    }
+      
+      function editHeadImg(){
+          if(isCreatElement()){
+            createImgList();
+          }
+           openChooseImg();
+      }
+
+      function isCreatElement(){
+        let f = document.getElementById("imgListContainer"); 
+        let num = f.childElementCount;
+        let flag = num ==0
+        return flag;
+      
+      }
     </script>
 </body>
 </html>
