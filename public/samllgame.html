@@ -4,8 +4,8 @@
         <meta charset="utf-8">
         <title>小游戏</title>
         <script type="text/javascript" src="./colorpicker.js"></script>
-        <script type="text/javascript" src="./drawChartTool.js"></script>
         <script type="text/javascript" src="./websocketTool.js"></script>
+        <script type="text/javascript" src="./drawChartTool.js"></script>
         <link rel="stylesheet" type="text/css" href="./themes.css" />
    
         <style>
@@ -19,7 +19,6 @@
             display: flex;
             margin: 60px auto;
             width:1100px ;
-            overflow-y: hidden;
             /* background: beige; */
         }
         .canvas{
@@ -30,14 +29,14 @@
         }
         .dis{
             width: 200px;
-            height: 560px;
+            height: 600px;
             background: #efe6ce;
             margin: 5px;
           
         }
         .tool{
             width: 300px;
-            height: 560px;
+            height: 600px;
             /* background: #efe6ce; */
             margin: 5px;
           
@@ -104,7 +103,7 @@
                  
                     </div>
 
-                <canvas class='canvas' id="canvas" width="600" height="560">
+                <canvas class='canvas' id="canvas" width="600" height="600">
                         对不起，您的浏览器不支持！
                 </canvas>
                 <div class='tool'>
@@ -124,20 +123,24 @@
                         <button class="button-css" id="eraser">使用橡皮擦 </button>
                         <button class="button-css" id="clear_canvas">清空画布 </button>
                         <button class="button-css">保存图片 </button>
-
-
                 </div>
         </div>
         
-
         <script>
- 
+      
+        var session = window.sessionStorage;
+        var userInfo = getUserInfo();
+        if(!userInfo){
+            location.href = './index.html'
+        }
+        var msg = -1;
+        var isshowchart = false;
         if(window.WebSocket){  ws = getWebsocket()}
         var penWeight = 1;
 		var penColor = '#f00';
         var isEraser = false;	//是否正在使用橡皮擦 
         var canvas = document.getElementById('canvas');
-        //var cvs = canvas.getContext('2d');
+        var cvs = canvas.getContext('2d');
         var drawobj = {
             start_x:null,
             start_y:null,
@@ -149,74 +152,34 @@
             draw_status:1
 
         }
-        drawchart(drawobj,canvas)
 
-        // //画画
-        // canvas.onmouseenter = function(){
-		// 	canvas.onmousedown = function(e){
-		// 		var start_x = e.clientX - canvas.offsetLeft + document.body.scrollLeft;
-        //         var start_y = e.clientY - canvas.offsetTop + document.body.scrollTop;
-        //         //传送起点
-        //         drawobj.start_x = start_x;
-        //         drawobj.start_y = start_y;
-               
-		// 		if(isEraser === false){
-					
-		// 			cvs.beginPath();				//开始本次绘画
-		// 			cvs.moveTo(start_x, start_y);	//画笔起始点
-		// 			cvs.lineCap = 'round';
-		// 			cvs.lineJoin="round";
-		// 			cvs.strokeStyle = penColor;		//加载全局数据（画笔颜色）
-		// 			cvs.lineWidth = penWeight;		//加载全局数据（画笔粗细）
-		// 			cvs.lineTo(start_x, start_y);
-		// 			cvs.stroke();	//画一个点
-		// 		}
-		// 		else{
-		// 			cvs.clearRect(start_x - penWeight/2, start_y - penWeight/2, penWeight, penWeight);
-		// 		}
-		// 		canvas.onmousemove = function(e){
-		// 			var move_x = e.clientX - canvas.offsetLeft + document.body.scrollLeft;
-        //             var move_y = e.clientY - canvas.offsetTop + document.body.scrollTop;
-                    
-        //             drawobj.end_x = move_x;
-        //             drawobj.end_y = move_y;
-        //             drawobj.draw_status = 2;
-		// 			if(isEraser === false){
-		// 				cvs.lineTo(move_x, move_y);
-		// 				cvs.stroke();	//渲染
-		// 			}
-		// 			else{
-		// 				cvs.clearRect(move_x - penWeight/2, move_y - penWeight/2, penWeight, penWeight);
-        //             }
-        //             var msg = {
-        //                 type:1,
-        //                 drawobj:drawobj
-        //             }
-        //             console.log(drawobj)
-                   
-        //             ws.send(JSON.stringify(msg))
-		// 		}
-		// 		canvas.onmouseup = function(e){
-		// 			cvs.closePath();	//结束本次绘画
-		// 			canvas.onmousemove = null;
-        //             canvas.onmouseup = null;
-        //         }
-        //         drawobj.draw_status = 1;
-        //             var msg = {
-        //                 type:1,
-        //                 drawobj:drawobj
-        //             }
-        //             console.log(drawobj)
-                   
-        //             ws.send(JSON.stringify(msg))
-		// 	}
-		// 	canvas.onmouseleave = function(){
-		// 		canvas.onmousemove = null;
-		// 		canvas.onmouseup = null;
-		// 		canvas.onmousedown = null;
-		// 	}
-		// }
+        function getUserInfo(){
+            let userInfo = JSON.parse(session.getItem('userInfo'));
+            return userInfo ? userInfo : null;
+            
+        }
 
+         ws.onmessage = function(e){
+            var msg =JSON.parse(e.data);
+            // 接受服务清空画布的消息
+            if(msg.isclear){clearchart(canvas);}
+
+            if(msg.returntype ==0){
+                /// 刷新房间的用户
+            }
+            if(msg.draw_uid == userInfo.uid){
+                drawchart(drawobj,canvas,cvs,ws)
+            }
+            else{
+                if(msg.draw_info){showchart(cvs,msg.draw_info)}
+                
+            }
+            
+         }
+
+        
+
+      
 
 
         //橡皮擦
