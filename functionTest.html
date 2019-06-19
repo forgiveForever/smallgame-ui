@@ -1,0 +1,28 @@
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>test 函数参数</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+</head>
+<body>
+    <script>
+       var a={num:5}
+       function test(b){
+          setTimeout(() => {
+		      b.num = 7
+              console.log(b)
+          }, 100);
+       }
+       test(a)
+      a.num = 6
+	  
+	  setTimeout(()=>{
+	  console.log(a)
+	  },100)
+    
+    </script>
+</body>
+</html>

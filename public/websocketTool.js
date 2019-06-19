@@ -4,13 +4,16 @@
     var session = window.sessionStorage;
     ws.onopen = function(e){
                 console.log("连接服务器成功");
-                var timestamp = (new Date()).valueOf();
-                timestamp = timestamp+''
+                var userInfo = JSON.parse(session.getItem('userInfo'));
                 let info={
-                    uid:timestamp,
-                    type:0
+                    userInfo:userInfo,
+                    sendtype:0,
+                    returntype:0,
+                    returnroom:null,
+                    returnisclear:false,
+                    draw_info:null,
+                    draw_uid:null,
                 }
-                session.setItem('uid',timestamp)
                 ws.send(JSON.stringify(info));
 
             }
