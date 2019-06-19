@@ -1,6 +1,7 @@
 
 // type 0 代表第一次传送用户标识，
     var ws = new WebSocket('ws://47.107.105.43:8001');
+	var ws = new WebSocket('ws://47.107.105.43:8001');
     var session = window.sessionStorage;
     ws.onopen = function(e){
                 console.log("连接服务器成功");
