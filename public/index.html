@@ -143,6 +143,7 @@ button :focus{outline:0;}
       btn_create_room.onclick = function(){
           var username_el = document.getElementById("username");
           var roomid_el = document.getElementById("roomid");
+          var user_img = document.getElementById("head_img").src;
           var username = username_el.value
           var roomid = roomid_el.value
           if(roomid==null || roomid==""){
@@ -157,7 +158,8 @@ button :focus{outline:0;}
                     username:username,
                     roomid:roomid,
                     uid:timestamp,
-                    ishost:true
+                    ishost:true,
+                    user_img:user_img
                 }
                 session.setItem('userInfo',JSON.stringify(userInfo));
                 location.href = "./samllgame.html"
@@ -169,6 +171,7 @@ button :focus{outline:0;}
       btn_enter_room.onclick =  function(){
           var username_el = document.getElementById("username");
           var roomid_el = document.getElementById("roomid");
+          var user_img = document.getElementById("head_img").src;
           var username = username_el.value
           var roomid = roomid_el.value
           if(roomid==null || roomid==""){
@@ -183,7 +186,8 @@ button :focus{outline:0;}
                     username:username,
                     roomid:roomid,
                     uid:timestamp,
-                    ishost:false
+                    ishost:false,
+                    user_img:user_img
                 }
                 session.setItem('userInfo',JSON.stringify(userInfo));
                 location.href = "./samllgame.html"
