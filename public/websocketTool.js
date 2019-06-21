@@ -1,7 +1,7 @@
 
 // type 0 代表第一次传送用户标识，
-   // const ip ='ws://47.107.105.43:8001';
-    const ip ='ws://127.0.0.1:8001';
+    const ip ='ws://47.107.105.43:8001';
+    //const ip ='ws://127.0.0.1:8001';
 	var ws ;
     var session = window.sessionStorage;
 
